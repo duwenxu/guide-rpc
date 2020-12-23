@@ -9,6 +9,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>rpc-framework-simple</artifactId>
+
+
+
     <dependencies>
         <dependency>
             <groupId>github.javaguide</groupId>

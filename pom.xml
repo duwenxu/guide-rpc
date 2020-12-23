@@ -16,7 +16,7 @@
         <kryo.version>4.0.2</kryo.version>
         <guava.version>29.0-jre</guava.version>
         <checkstyle-maven-plugin.version>3.1.1</checkstyle-maven-plugin.version>
-        <spring.version>5.2.7.RELEASE</spring.version>
+        <spring.version>5.2.8.RELEASE</spring.version>
         <curator-version>4.2.0</curator-version>
         <!-- test -->
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
@@ -24,8 +24,22 @@
         <!--logging-->
         <slf4j.version>1.7.25</slf4j.version>
         <!-- protostuff -->
-        <protostuff.version>1.7.2</protostuff.version>
+        <protostuff.version>1.7.1</protostuff.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>alimaven</id>
+            <name>aliyun maven</name>
+            <url> http://maven.aliyun.com/nexus/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>mvnrepository</id>
+            <url>http://maven.oschina.net/content/groups/public/</url>
+        </repository>
+    </repositories>
+
+
     <modules>
         <module>rpc-framework-simple</module>
         <module>hello-service-api</module>
@@ -33,6 +47,7 @@
         <module>example-server</module>
         <module>rpc-framework-common</module>
     </modules>
+
     <dependencies>
         <!-- lombok -->
         <dependency>
@@ -72,6 +87,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
