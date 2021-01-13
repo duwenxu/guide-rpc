@@ -33,6 +33,10 @@ public class KryoSerializer implements Serializer {
 
     @Override
     public byte[] serialize(Object obj) {
+        /**
+         * try()中的代码一般放的是对资源的申请，如果{}中的代码出项了异常，（）中的资源就会被关闭，这在inputstream和outputstream的使用中会很方便
+         * https://blog.csdn.net/weixin_42447959/article/details/81192098    java7中的 try-with-source,相当于是一种类似于lambda的语法糖，底层仍然是try{}catch{}finally{}的写法
+         */
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 Output output = new Output(byteArrayOutputStream)) {
             Kryo kryo = kryoThreadLocal.get();
