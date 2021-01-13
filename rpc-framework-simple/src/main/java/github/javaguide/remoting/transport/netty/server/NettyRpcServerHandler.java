@@ -9,10 +9,7 @@ import github.javaguide.remoting.dto.RpcMessage;
 import github.javaguide.remoting.dto.RpcRequest;
 import github.javaguide.remoting.dto.RpcResponse;
 import github.javaguide.remoting.handler.RpcRequestHandler;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
@@ -38,6 +35,10 @@ public class NettyRpcServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        Channel channel = ctx.channel();
+        log.info("channel remoteAddress={}", channel.remoteAddress());
+        log.info("channel localAddress={}", channel.localAddress());
+
         try {
             if (msg instanceof RpcMessage) {
                 log.info("server receive msg: [{}] ", msg);
@@ -54,7 +55,7 @@ public class NettyRpcServerHandler extends ChannelInboundHandlerAdapter {
                     Object result = rpcRequestHandler.handle(rpcRequest);
                     log.info(String.format("server get result: %s", result.toString()));
                     rpcMessage.setMessageType(RpcConstants.RESPONSE_TYPE);
-                    if (ctx.channel().isActive() && ctx.channel().isWritable()) {
+                    if (channel.isActive() && channel.isWritable()) {
                         RpcResponse<Object> rpcResponse = RpcResponse.success(result, rpcRequest.getRequestId());
                         rpcMessage.setData(rpcResponse);
                     } else {
