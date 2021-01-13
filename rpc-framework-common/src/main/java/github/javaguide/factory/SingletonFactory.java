@@ -18,17 +18,15 @@ public final class SingletonFactory {
 
     public static <T> T getInstance(Class<T> c) {
         String key = c.toString();
-        Object instance = null;
+        Object instance;
         synchronized (SingletonFactory.class) {
             instance = OBJECT_MAP.get(key);
             if (instance == null) {
                 try {
                     instance = c.getDeclaredConstructor().newInstance();
                     OBJECT_MAP.put(key, instance);
-                } catch (IllegalAccessException | InstantiationException e) {
+                } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
                     throw new RuntimeException(e.getMessage(), e);
-                } catch (NoSuchMethodException | InvocationTargetException e) {
-                    e.printStackTrace();
                 }
             }
         }
