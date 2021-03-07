@@ -20,10 +20,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public final class ExtensionLoader<T> {
 
     private static final String SERVICE_DIRECTORY = "META-INF/extensions/";
+    //Class类型和对应的 ExtensionLoader加载器缓存
     private static final Map<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<>();
     private static final Map<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<>();
 
+    //要加载的Class类型
     private final Class<?> type;
+    //key值--类
     private final Map<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
@@ -31,6 +34,12 @@ public final class ExtensionLoader<T> {
         this.type = type;
     }
 
+    /**
+     * 获取当前类类型的类加载器
+     * @param type 要加载的类型
+     * @param <S> 泛型
+     * @return 指定类的ExtensionLoader
+     */
     public static <S> ExtensionLoader<S> getExtensionLoader(Class<S> type) {
         if (type == null) {
             throw new IllegalArgumentException("Extension type should not be null.");
@@ -44,12 +53,18 @@ public final class ExtensionLoader<T> {
         // firstly get from cache, if not hit, create one
         ExtensionLoader<S> extensionLoader = (ExtensionLoader<S>) EXTENSION_LOADERS.get(type);
         if (extensionLoader == null) {
+            //没有当前Class的加载器，则创建并加入缓存
             EXTENSION_LOADERS.putIfAbsent(type, new ExtensionLoader<S>(type));
             extensionLoader = (ExtensionLoader<S>) EXTENSION_LOADERS.get(type);
         }
         return extensionLoader;
     }
 
+    /**
+     * 根据key值获取对象
+     * @param name 某类对象指定的key值
+     * @return 该类对象的实例
+     */
     public T getExtension(String name) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Extension name should not be null or empty.");
@@ -62,6 +77,7 @@ public final class ExtensionLoader<T> {
         }
         // create a singleton if no instance exists
         Object instance = holder.get();
+        //双重检查锁获取单例实例
         if (instance == null) {
             synchronized (holder) {
                 instance = holder.get();
@@ -74,8 +90,10 @@ public final class ExtensionLoader<T> {
         return (T) instance;
     }
 
+
     private T createExtension(String name) {
         // load all extension classes of type T from file and get specific one by name
+        //
         Class<?> clazz = getExtensionClasses().get(name);
         if (clazz == null) {
             throw new RuntimeException("No such extension of name " + name);
@@ -92,6 +110,10 @@ public final class ExtensionLoader<T> {
         return instance;
     }
 
+    /**
+     * 获取所有扩展定义的类信息
+     * @return
+     */
     private Map<String, Class<?>> getExtensionClasses() {
         // get the loaded extension class from the cache
         Map<String, Class<?>> classes = cachedClasses.get();
@@ -110,6 +132,10 @@ public final class ExtensionLoader<T> {
         return classes;
     }
 
+    /**
+     * 从资源文件中加
+     * @param extensionClasses
+     */
     private void loadDirectory(Map<String, Class<?>> extensionClasses) {
         String fileName = ExtensionLoader.SERVICE_DIRECTORY + type.getName();
         try {
@@ -127,6 +153,12 @@ public final class ExtensionLoader<T> {
         }
     }
 
+    /**
+     * 从资源文件中加载 单个的 KEY-全类名的信息
+     * @param extensionClasses  KEY-全类名的信息 映射
+     * @param classLoader 类加载器
+     * @param resourceUrl SPI文件位置
+     */
     private void loadResource(Map<String, Class<?>> extensionClasses, ClassLoader classLoader, URL resourceUrl) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceUrl.openStream(), UTF_8))) {
             String line;
