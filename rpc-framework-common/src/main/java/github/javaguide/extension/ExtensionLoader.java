@@ -22,12 +22,14 @@ public final class ExtensionLoader<T> {
     private static final String SERVICE_DIRECTORY = "META-INF/extensions/";
     //Class类型和对应的 ExtensionLoader加载器缓存
     private static final Map<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<>();
+    //缓存所有的 类名--类实例 映射信息
     private static final Map<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<>();
 
     //要加载的Class类型
     private final Class<?> type;
-    //key值--类
+    //key值--类    Holder使用volatile，可以在当前缓存中的KEY-类名映射发生变化时使其他线程迅速感知
     private final Map<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
+    //缓存类   名称--类类型  信息
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
     private ExtensionLoader(Class<?> type) {
@@ -70,6 +72,7 @@ public final class ExtensionLoader<T> {
             throw new IllegalArgumentException("Extension name should not be null or empty.");
         }
         // firstly get from cache, if not hit, create one
+        //根据名称KEY值
         Holder<Object> holder = cachedInstances.get(name);
         if (holder == null) {
             cachedInstances.putIfAbsent(name, new Holder<>());
@@ -93,7 +96,7 @@ public final class ExtensionLoader<T> {
 
     private T createExtension(String name) {
         // load all extension classes of type T from file and get specific one by name
-        //
+        // 获取所有当前类的扩展信息并从中获取指定KEY对应的class名
         Class<?> clazz = getExtensionClasses().get(name);
         if (clazz == null) {
             throw new RuntimeException("No such extension of name " + name);
@@ -133,10 +136,11 @@ public final class ExtensionLoader<T> {
     }
 
     /**
-     * 从资源文件中加
-     * @param extensionClasses
+     * 从资源文件中加载所有的 扩展信息类
+     * @param extensionClasses 扩展类信息映射
      */
     private void loadDirectory(Map<String, Class<?>> extensionClasses) {
+        //当前类的SPI文件路径
         String fileName = ExtensionLoader.SERVICE_DIRECTORY + type.getName();
         try {
             Enumeration<URL> urls;
@@ -162,7 +166,7 @@ public final class ExtensionLoader<T> {
     private void loadResource(Map<String, Class<?>> extensionClasses, ClassLoader classLoader, URL resourceUrl) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceUrl.openStream(), UTF_8))) {
             String line;
-            // read every line
+            // read every line  获取对应的name-clazz信息
             while ((line = reader.readLine()) != null) {
                 // get index of comment
                 final int ci = line.indexOf('#');
