@@ -38,7 +38,7 @@ public class KryoSerializer implements Serializer {
          * https://blog.csdn.net/weixin_42447959/article/details/81192098    java7中的 try-with-source,相当于是一种类似于lambda的语法糖，底层仍然是try{}catch{}finally{}的写法
          */
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                Output output = new Output(byteArrayOutputStream)) {
+             Output output = new Output(byteArrayOutputStream)) {
             Kryo kryo = kryoThreadLocal.get();
             // Object->byte:将对象序列化为byte数组
             kryo.writeObject(output, obj);
@@ -52,7 +52,7 @@ public class KryoSerializer implements Serializer {
     @Override
     public <T> T deserialize(byte[] bytes, Class<T> clazz) {
         try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
-                Input input = new Input(byteArrayInputStream)) {
+             Input input = new Input(byteArrayInputStream)) {
             Kryo kryo = kryoThreadLocal.get();
             // byte->Object:从byte数组中反序列化出对对象
             Object o = kryo.readObject(input, clazz);

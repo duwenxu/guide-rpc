@@ -1,8 +1,8 @@
 package github.javaguide.factory;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 获取单例对象的工厂类
@@ -11,25 +11,26 @@ import java.util.Map;
  * @createTime 2020年06月03日 15:04:00
  */
 public final class SingletonFactory {
-    private static final Map<String, Object> OBJECT_MAP = new HashMap<>();
+    private static final Map<String, Object> OBJECT_MAP = new ConcurrentHashMap<>();
 
     private SingletonFactory() {
     }
 
     public static <T> T getInstance(Class<T> c) {
+        if (c == null) {
+            throw new IllegalArgumentException();
+        }
         String key = c.toString();
-        Object instance;
-        synchronized (SingletonFactory.class) {
-            instance = OBJECT_MAP.get(key);
-            if (instance == null) {
+        if (OBJECT_MAP.containsKey(key)) {
+            return c.cast(OBJECT_MAP.get(key));
+        } else {
+            return c.cast(OBJECT_MAP.computeIfAbsent(key, k -> {
                 try {
-                    instance = c.getDeclaredConstructor().newInstance();
-                    OBJECT_MAP.put(key, instance);
-                } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
+                    return c.getDeclaredConstructor().newInstance();
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
-            }
+            }));
         }
-        return c.cast(instance);
     }
 }
